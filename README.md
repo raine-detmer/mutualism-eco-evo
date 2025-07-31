@@ -13,5 +13,5 @@ model_formulation.Rmd: contains the code for creating figures illustrating the r
 ten_stage_model.Rmd: contains the code for running a version of the model with 10 host stages and making supplemental figure 18
 
 
-fish_coral_data.csv: subset of survey data associated with Holbrook et al. (2008) that were obtained from scuba surveys conducted by Sally J. Holbrook and Russell J. Schmitt in 2005 in mid-lagoon areas between Opunohu Bay and Irihoriu Pass on the north shore of Moorea, French Polynesia. These data include the length and width of individual coral colonies in the genus Pocillopora and the number of three species of damselfish on each colony 
+fish_coral_data.csv: subset of survey data associated with Holbrook et al. (2008) that were obtained from scuba surveys conducted by Sally J. Holbrook and Russell J. Schmitt in 2005 on the north shore of Moorea, French Polynesia. These data include the length and width of individual coral colonies in the genus Pocillopora and the number of three species of damselfish on each colony 
 
