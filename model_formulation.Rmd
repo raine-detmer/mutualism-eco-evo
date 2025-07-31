@@ -1,0 +1,851 @@
+---
+title: "model_formulation"
+author: ""
+date: "2025-05-29"
+output: html_document
+---
+
+README: code for making all supplemental figures illustrating demographic functions used in the model
+
+
+# demographic functions
+
+```{r}
+
+# these functions consist of:
+# 1) functions describing relationships between host size and demographic rates and for calculating the average of these rates over specified size classes
+# 2) functions describing the effects of the partner on host growth and mortality and the effects of the host on partner mortality
+
+# relationship between individual host area and fecundity 
+# Fmn = area at which the host become reproductively mature
+# Fconst = baseline fecundity upon reaching reproductive maturity
+# Fexp = rate at which fecundity increases exponentially with area
+FofA <- function(A, Fmn, Fconst, Fexp){
+  
+  if(A < Fmn){ # if the host area is less than the threshold for reproductive maturity
+    f <- 0 # fecundity is zero
+  } else{ # if host area is greater than the threshold for reproductive maturity
+    
+    f <- Fconst*exp(Fexp*(A-Fmn)) # fecundity increases exponentially
+    
+  }
+  
+}
+
+FofA <- Vectorize(FofA, "A") # vectorize this function with respect to host area
+
+
+# function for calculating average fecundity within size range from x1 to x2 (where both are larger than the min size of reproductive maturity, Fmn)
+# x1 = lower bound (host area) of integration range
+# x2 = upper bound (host area) of integration range
+# Fmn = area at which the host become reproductively mature
+# Fconst = baseline fecundity upon reaching reproductive maturity
+# Fexp = rate at which fecundity increases exponentially with area
+
+avg_fec <- function(x1, x2, Fmn, Fconst, Fexp){
+  
+  if(Fexp != 0){
+    # integral of c*exp(k*x) = c*1/k*exp(k*x)
+    #avg <- (Fconst*exp(Fexp*x2)*1/Fexp-Fconst*exp(Fexp*x1)*1/Fexp)*1/(x2-x1)
+    
+    # integral of c*exp(k*(x-Fmn)) = c*1/k*exp(k*(x-Fmn))
+    avg <- (Fconst*exp(Fexp*(x2-Fmn))*1/Fexp-Fconst*exp(Fexp*(x1-Fmn))*1/Fexp)*1/(x2-x1)
+    
+  } else{
+    # integral of c*1 = (c*x2 - c*x1)
+    avg <- (Fconst*x2 - Fconst*x1)/(x2-x1) # just Fconst
+  }
+  
+  
+  return(avg)
+  
+}
+
+
+
+# growth: assume diameter follows von Bertalanffy growth curve
+# some studies have used it for corals:
+# Cafarelli et al. 2017 https://doi.org/10.1016/j.ecolmodel.2016.12.015
+
+# use the basic growth equation to calculate the time it takes an individual to grow through a size class and use that to get the transition probability
+
+# von Bert growth: L(t) = Linf*(1-exp(-k*t))
+
+# age at length: log(1-L(t)/Linf)/-k
+
+# make a function that takes the current size as an input and returns the size one month earlier (note this assumes an even distribution within size classes)
+# A = host area at time t + 1
+# Dinf = max host diameter 
+# g = von Bert growth rate
+
+S1ofA <- function(A, Dinf, g){
+  # first convert area to diameter
+  # A = pi*(D/2)^2
+  D <- sqrt(A/pi)*2
+  
+  # diameter one timestep earlier
+  D0 <- (1-exp(log(1-D/Dinf)+g))*Dinf
+  
+  # area one timestep earlier:
+  A0 <- pi*(D0/2)^2
+  
+  return(A0)
+}
+
+# then proportion that grow from A0 to >= A in class from A1 to A would be (A-A0)/(A-A1)
+
+
+
+# function for calculating host mortality as a function of host area (declining exponential)
+# A = host area
+# a = how much higher the mortality of a host of area 0 is than the asymptotic mortality rate
+# b = rate at which mortality declines with increasing host area
+# c = asymptotic mortality rate approached by the largest individuals
+
+MofA <- function(A, a,b, c){
+  
+  m <- a*exp(-b*A) + c # c = lowest mortality rate will go, c + a = mortality of smallest size
+  
+}
+
+MofA <- Vectorize(MofA, "A")
+
+
+# function for calculating average mortality within size range from x1 to x2
+# x1 = lower bound (host area) of integration range
+# x2 = upper bound (host area) of integration range
+# a = how much higher the mortality of a host of area 0 is than the asymptotic mortality rate
+# b = rate at which mortality declines with increasing host area
+# c = asymptotic mortality rate approached by the largest individuals
+
+
+avg_mort <- function(x1, x2, a, b, c){
+  
+  if(b !=0){
+    # integral of a*exp(-bx) + c = a*-1/b*exp(-bx) + cx
+    avg <- (a*-1/b*exp(-b*x2) + c*x2 +a*1/b*exp(-b*x1) - c*x1)*1/(x2-x1)
+  } else{
+    # integral of a*1 + c = (a + c)*x2 - (a + c)*x1
+    avg <- ((a + c)*x2 - (a + c)*x1)/(x2-x1)
+  }
+  
+  
+  return(avg)
+  
+}
+
+
+# # # # effects of partner on host and effects of host on partner # # # #
+
+
+# function for calculating asymptotic host mortality (c in MofA function) as a function of partner abundance
+# c0 = baseline asymptotic mortality rate in absence of partner
+# exp_c = rate at which the asymptotic mortality rate declines with partner abundance
+# c_mn = lowest possible density independent mortality rate
+# P = partner abundance (per host)
+
+MofP <- function(c0, exp_c, c_mn, P){
+  
+  if(is.na(P)==T){
+    c <- c0
+  } else{
+    c <- (c0-c_mn)*exp(-exp_c*P) + c_mn
+  }
+  
+  return(c)
+  
+}
+
+
+
+MofP <- Vectorize(MofP, "P")
+
+# function for calculating host growth rate (g in S1ofA function) as a function of partner abundance
+# g0 = baseline growth host rate in absence of partner
+# exp_g = rate at which host growth rate increases with partner abundance
+# g_mx = maximum host growth rate
+# P = partner abundance (per host)
+
+GofP <- function(g0, exp_g, g_mx, P){
+  
+  if(is.na(P)==T){
+    g <- g0
+  } else{
+    g <- g0 + (g_mx-g0)*(1-exp(-exp_g*P))
+  }
+  
+  return(g)
+  
+}
+
+
+
+GofP <- Vectorize(GofP, "P")
+
+
+
+# function for calculating Fconst as a function of partner abundance
+# Fconst0 = baseline host fecundity in absence of partner
+# exp_F = rate at which host fecundity increases with partner abundance
+# Fconst_mx = maximum baseline host fecundity
+# P = partner abundance (per host)
+
+FofP <- function(Fconst0, exp_F, Fconst_mx, P){
+  
+  if(is.na(P)==T){
+    Fconst <- Fconst0
+  } else{
+    Fconst <- Fconst0 + (Fconst_mx-Fconst0)*(1-exp(-exp_F*P))
+  }
+  
+  return(Fconst)
+  
+}
+
+FofP <- Vectorize(FofP, "P")
+
+# function for calculating partner density dependent mortality rate as a function of host area
+# K0 = partner density dependent mortality on a host of area 0
+# slope_mP = controls rate at which partner DD mortality decreases with host area
+# A = host area
+
+MPofA <- function(K0, slope_mP, A){
+  
+  #mP <- 1/(slope_mP*A)
+  
+  mP <- 1/(slope_mP*A^(3/2) + K0)
+  
+  return(mP)
+  
+}
+
+MPofA <- Vectorize(MPofA, "A")
+
+# average this 
+# x1 = lower bound (host area) of integration range
+# x2 = upper bound (host area) of integration range
+# K0 = partner density dependent mortality on a host of area 0
+# slope_mP = controls rate at which partner DD mortality decreases with host area
+
+avg_Pmort <- function(x1, x2, K0, slope_mP){
+  
+  # integral of 1/(slope_mP*A) is log(slope_mP*A)*1/slope_mP
+  #avg <- (log(slope_mP*x2)*1/slope_mP - log(slope_mP*x1)*1/slope_mP)/(x2-x1)
+  
+  # integral of 1/(slope_mP*A^(3/2) + K0) is more complicated, calculated using Mathematica
+  
+  
+  if(slope_mP == 0){
+    
+    avg <- 1/K0
+    
+  } else{
+    
+    if(K0 > 0){
+      int.x2 <- 1/(3*slope_mP^(2/3)*K0^(1/3))*(log(abs(slope_mP^(2/3)*x2-slope_mP^(1/3)*K0^(1/3)*sqrt(x2)+K0^(2/3)))+2*sqrt(3)*atan((2*slope_mP^(1/3)*K0^(2/3)*sqrt(x2)-K0)/(sqrt(3)*K0))-2*log(abs(slope_mP*sqrt(x2)+slope_mP^(2/3)*K0^(1/3))))
+      
+      int.x1 <- 1/(3*slope_mP^(2/3)*K0^(1/3))*(log(abs(slope_mP^(2/3)*x1-slope_mP^(1/3)*K0^(1/3)*sqrt(x1)+K0^(2/3)))+2*sqrt(3)*atan((2*slope_mP^(1/3)*K0^(2/3)*sqrt(x1)-K0)/(sqrt(3)*K0))-2*log(abs(slope_mP*sqrt(x1)+slope_mP^(2/3)*K0^(1/3))))
+      
+    } else{
+      int.x2 <- -2/(slope_mP*sqrt(x2))
+      int.x1 <- -2/(slope_mP*sqrt(x1))
+    }
+    
+    avg <- (int.x2 - int.x1)/(x2-x1)
+    
+  }
+  
+  
+  
+  return(avg)
+  
+}
+
+
+# PARTNER BEHAVIOR:
+# function for distributing settlers according to preference for adults vs juveniles
+# phi = strength of preference for large hosts
+# A_tots = total area covered by hosts in each size class
+
+phi_fun <- function(phi, A_tots){
+  
+  # go to all size classes
+  p1 <- A_tots/sum(A_tots)
+  # go to largest size classes only
+  p2 <- c(0, A_tots[2]/sum(A_tots[2:3]), A_tots[3]/sum(A_tots[2:3]))
+  
+  p <- (1-phi)*p1 + phi*p2
+  
+  return(p)
+  
+  
+}
+
+
+
+```
+
+
+# model function
+
+
+```{r}
+
+# parameters
+# tmax = max timepoint in simulation
+# P0 = initial partner population densities on each host size class (vector)
+# H0 = initial host densities in each size class (vector)
+# rP = partner reproduction rate (same on all host size classes)
+# nP = partner density independent mortality rate (same on all host size classes)
+# mP_pars = parameters for relationship btw partner density dependent mortality rates and host area (named list with parameters slope_mP and K0)
+# eP = partner external recruitment
+# nH_pars = parameters for calculating host density independent mortality rates as a function of partner abundance (named list with elements a_n, b_n, c_n0, exp_cn, and cn_mx)
+# mH_pars = parameters for calculating host density dep mortality (named list with elements a_m, b_m, and c_m)
+# G_pars = parameters for calculating host growth rates as a function of partner abundance (named list with elements Dinf, g0, exp_g, g_mx, and Dmin)
+# F_pars = parameters for calculating host fecundities (named list with elements Fmn, Fconst, Fexp)
+# eH = host external recruitment
+# Apatch = total patch area (carrying capacity for the host)
+# z = whether the system is open (0) or closed (1)
+# phi = strength of preference for adult hosts
+
+mod_fun3 <- function(tmax, P0, H0, rP, nP, mP_pars, eP, nH_pars, mH_pars, G_pars, F_pars, 
+                     eH, Apatch, z, phi){
+  
+  
+  # unlist parameters
+  # partner DD mortality
+  K0 <- mP_pars$K0; slope_mP <- mP_pars$slope_mP
+  
+  # host dens-indep mortality
+  a_n <- nH_pars$a_n; b_n <- nH_pars$b_n; c_n0 <- nH_pars$c_n0; exp_cn <- nH_pars$exp_cn; cn_mn <- nH_pars$cn_mn
+  
+  # host density dep mortality
+  a_m <- mH_pars$a_m; b_m <- mH_pars$b_m; c_m <- mH_pars$c_m
+  
+  # host growth
+  Dinf <- G_pars$Dinf; g0 <- G_pars$g0; exp_g <- G_pars$exp_g; g_mx <- G_pars$g_mx
+  Dmin <- G_pars$Dmin
+  
+  # host fecundity
+  Fmn <- F_pars$Fmn; Fconst <- F_pars$Fconst; Fexp <- F_pars$Fexp
+  
+  # calculate fixed parameters
+  # boundaries of the host size classes: 0-Fmn, Fmn-90% of max size, >90% of max size
+  Amax <- pi*(1/2*Dinf)^2
+  Amin <- pi*(1/2*Dmin)^2
+  A12 <- Fmn
+  A23 <- 0.9*Amax
+  
+  # midpoints (used for calculating area occupied by each class; same as avg area in each class)
+  A <- c((Amin+A12)/2, (A23+A12)/2, (Amax+A23)/2)
+  
+  # partner density dependent mortality in each size class (depend on areas in each class)
+  mP <- c(avg_Pmort(Amin, A12, K0, slope_mP), avg_Pmort(A12, A23, K0, slope_mP), avg_Pmort(A23, Amax, K0, slope_mP))
+  
+  # host fecundities in each size class
+  FH <- c(0, avg_fec(A12, A23, Fmn, Fconst, Fexp), avg_fec(A23, Amax, Fmn, Fconst, Fexp))
+  
+  # host density dependent mortality rates in each size class
+  mH <- c(avg_mort(Amin, A12, a_m, b_m, c_m), avg_mort(A12, A23, a_m, b_m, c_m), avg_mort(A23, Amax, a_m, b_m, c_m))
+  
+  # vector of time steps
+  tset <- seq(from = 0, to = tmax, by = 1) # time steps for iterating over
+  
+  # holding matrices and initial conditions
+  # host
+  Hmat <- matrix(NA, nrow = length(A), ncol = length(tset))
+  Hmat[ ,1] <- H0
+  
+  # partner
+  Pmat <- matrix(NA, nrow = length(A), ncol = length(tset))
+  Pmat[ ,1] <- P0
+  
+  
+  for(i in 2:length(tset)){ # for each time step in the simulation
+    
+    # calculate the area occupied
+    Atot <- sum(A*Hmat[, i-1])
+    
+    # calculate the host growth rates as a function of P per unit host
+    g_i <- GofP(g0, exp_g, g_mx, Pmat[, i-1]/Hmat[, i-1])
+    
+    # calculate size class transitions
+    # class 1 to 2:
+    A0_1 <- S1ofA(A12, Dinf, g_i[1])
+    G12 <- ifelse(A0_1 < Amin, 1, (A12-A0_1)/(A12-Amin)) # proportion that grew into next size class; if area at previous timestep is less than Amin, say 100% of class 1 grew to class 2
+    
+    # class 2 to 3: 
+    A0_2 <- S1ofA(A23, Dinf, g_i[2])
+    G23 <- ifelse(A0_2 < A12, 1, (A23-A0_2)/(A23-A12)) # proportion that grew into next size class; if area at previous timestep is in size class 1 (A02 < A12), say 100% of class 2 grew to class 3
+    
+    G <- c(G12, G23, 0)
+    
+    # calculate host dens-indep mortality rates as a function of P per host
+    c_n <- MofP(c_n0, exp_cn, cn_mn, Pmat[, i-1]/Hmat[, i-1])
+    nH <- c(avg_mort(Amin, A12, a_n, b_n, c_n[1]), avg_mort(A12, A23, a_n, b_n, c_n[2]), avg_mort(A23, Amax, a_n, b_n, c_n[3]))
+    
+    # calculate the host growth and survival rates
+    G_Ht <- G*max(0, 1-Atot/Apatch) # realized growth depends on how much room there is
+    S_Ht <- exp(-(nH + mH*Atot/Apatch)) # mH*Atot/Apatch*Hmat[, i-1]
+    
+    # calculate the survival rates for the partner
+    S_P <- rep(NA, 3)
+    
+    for(sss in 1:3){
+      if(Hmat[sss,i-1] == 0){
+        S_P[sss] <- 0
+      } else{
+        S_P[sss] <- exp(-(nP + mP[sss]*Pmat[sss, i-1]/Hmat[sss,i-1])) # mortality depends on P/H
+      }
+    }
+    
+    # make the host transition matrix
+    T_H <- matrix(rep(0, length(S_Ht)^2), nrow = length(S_Ht), ncol = length(S_Ht))
+    # fill in the first row (note fecundities are done separately below)
+    T_H[1, 1] <- (1-G_Ht[1])*S_Ht[1]
+    
+    # make the fish transition matrix
+    T_P <- matrix(rep(0, length(S_Ht)^2), nrow = length(S_Ht), ncol = length(S_Ht))
+    # fill in the first row
+    T_P[1, 1] <- (1-G_Ht[1])*S_P[1]*S_Ht[1]
+    
+    
+    # fill in the rest
+    for(mm in 2:length(S_Ht)){
+      
+      # host
+      T_H[mm, mm] <- (1-G_Ht[mm])*S_Ht[mm] # surviving and staying put
+      T_H[mm, mm-1] <- G_Ht[mm-1]*S_Ht[mm-1] # surviving and growing to next size class
+      
+      # partner
+      T_P[mm, mm] <- (1-G_Ht[mm])*S_P[mm]*S_Ht[mm] # surviving and staying put
+      T_P[mm, mm-1] <- G_Ht[mm-1]*S_P[mm-1]*S_Ht[mm-1] # surviving and growing to next size class
+    }
+    
+    # calculate the new population sizes
+    Hmat[, i] <- T_H %*% Hmat[, i-1]
+    Pmat[, i] <- T_P %*% Pmat[, i-1]
+    
+    
+    
+    # new recruits for the fish: distribute across the size classes according to preference function
+    # total recruits (depends on whether population is open or closed)
+    Rtot <- z*sum(rP*Pmat[ ,i-1]) + (1-z)*eP
+    
+    # preferences
+    # phi_fun(phi, Amax, A_mids, A_tots)
+    
+    if(sum(Hmat[, i-1])==0){ # if there are no hosts
+      pxset <- c(0, 0, 0) 
+    } else{
+      
+      pxset <- phi_fun(phi, A*Hmat[, i-1])
+    } 
+    
+    
+    # calculate recruit survival
+    S_R <- rep(NA, 3)
+    
+    for(sss in 1:3){
+      if(Hmat[sss,i-1] == 0){ # index here needs to match index used for P/H (i or i-1)
+        S_R[sss] <- 0
+      } else{
+        S_R[sss] <- exp(-(nP + mP[sss]*Pmat[sss, i-1]/Hmat[sss, i-1]))
+      }
+    }
+    
+    # add new recruits 
+    Pmat[, i] <- Pmat[, i] +  pxset*Rtot*S_R 
+    
+    # add new recruits for the host (depends on whether population is open or closed)
+    Hmat[1, i] <- Hmat[1, i] + z*sum(FH*Hmat[ ,i-1])*max(0, 1-Atot/Apatch) + (1-z)*eH*max(0, 1-Atot/Apatch)
+    
+    
+    
+    
+  }
+  
+  
+  
+  return(list(t = tset, H = Hmat, P = Pmat))
+  
+}
+
+```
+
+
+
+
+# default parameters
+
+```{r}
+
+Amax <- pi*(50/2)^2 # max area of a host
+Fmn <- pi*(14/2)^2 # area at which the host becomes reproductively mature
+Amin <- pi*(1/2)^2 # minimum area of a host
+Apatch <- (Amax+0.9*Amax)/2*100 # area of habitat patch
+
+A_mids <- c((Amin+Fmn)/2, (0.9*Amax+Fmn)/2, (Amax+0.9*Amax)/2) # used for calculating area occupied
+
+A12 <- Fmn # boundary between first and second size classes
+A23 <- 0.9*Amax # boundary between second and third size classes
+
+# initial conditions
+H01 <- c(0.01, 10, 25) # high adults
+H02 <- c(100, 5, 0.01) # high small
+
+P01 <- c(0, 10, 50)
+P02 <- c(0, 2, 0)
+
+tmax <- 1000 # number of timesteps to run the model; needs to be > 10 for the equilibration check to work
+
+eqtol <- 0.001 # prop difference btw abundance at tmax and tmax - 10 needs to be less than eqtol to consider the simulation to have equilibrated
+
+
+# HOST DENSITY INDEPENDENT MORTALITY
+ac_mult <-3 # mortality rate of smallest individuals is c*(ac_mult + 1), mortality rate of infinitely large individuals is c
+
+c_n0 <- 0.05 # maximum baseline asymptotic host density independent mortality rate (DI mortality rate of an infinitely large host)
+a_n <- ac_mult*c_n0 # mortality of smallest individuals is a_n + c_n
+b_n <- 0.005 # rate of decrease in host DI mortality rate with increasing host area
+exp_cn <- 0 # rate at which the asymptotic host DI mortality rate decreases with increasing partner density (b_cn in the main text)
+cn_mn <- 0.001 # lowest possible asymptotic DI mortality rate
+  
+# HOST DENSITY DEPENDENT MORTALITY
+c_m <- 0.05 # asymptotic host density dependent mortality rate (DD mortality rate of an infinitely large host)
+a_m <- ac_mult*c_m # DD mortality rate of smallest individuals is a_m + c_m
+b_m <- 0.005 # rate of decrease in host DD mortality rate with increasing host area
+
+# HOST GROWTH
+Dinf <- sqrt(Amax/pi)*2 # Amax = pi*(1/2*Dinf)^2 so Dinf = sqrt(Amax/pi)*2
+Dmin <- sqrt(Amin/pi)*2 # Amax = pi*(1/2*Dinf)^2 so Dinf = sqrt(Amax/pi)*2
+g0 <- 0.025 # min host growth rate; g0 = 0.025 means hosts become reproductively mature at about 2 yrs old 
+exp_g <-  0 # rate of increase in host growth rate with increasing partner density (b_g in main text)
+g_mx <- 0.1 # max host growth rate; become reproductively mature at about 6 months old
+
+# HOST FECUNDITY
+Fconst <- 0.25 # fecundity of a host at maturation
+Fexp <- 0.00025 # rate of increase in host fecundity with host area
+
+
+# external host recruitment
+eH <- 0 # no external recruits
+
+# PARTNER PARAMETERS
+rP <- 1  # reproduction rate
+nP <- 0.35 # density independent mortality rate
+eP <- 0 # external partner recruitment
+
+K0 <- 0.005 # baseline carrying capacity (inverse of baseline DD mortality rate)
+slope_mP <- 0.0015 # slope of relationship between host volume and partner carrying capacity 
+
+phi <- 0 # strength of partner preference for larger hosts
+
+# OPEN vs CLOSED
+z <- 1 # 1 = system is closed, 0 = system is open
+
+
+# lists for default simulation
+mP_pars <- list(K0 = K0, slope_mP = slope_mP)
+nH_pars <- list(a_n = a_n, b_n = b_n, c_n0 = c_n0, exp_cn = exp_cn, cn_mn = cn_mn)
+mH_pars <- list(a_m = a_m, b_m = b_m, c_m = c_m)
+G_pars <- list(Dinf = Dinf, g0 = g0, exp_g = exp_g, g_mx = g_mx, Dmin = Dmin)
+F_pars <- list(Fmn = Fmn, Fconst = Fconst, Fexp = Fexp)
+
+
+# DEFAULT EQUILIBRIUM
+dsim1 <- mod_fun3(tmax, P01, H01, rP, nP, mP_pars, eP, nH_pars, mH_pars, G_pars, F_pars, eH, Apatch, z, phi)
+
+# dH1eq <- c(dsim1$H[1,tmax], dsim1$H[2,tmax], dsim1$H[3,tmax])
+# dAeq <- sum(dsim1$H[ ,tmax]*c(Fmn/2, (0.9*Amax+Fmn)/2, (Amax+0.9*Amax)/2))
+
+
+#dsim2 <- mod_fun3(tmax, P01, H01, rP, nP, mP_pars, eP, nH_pars, mH_pars, G_pars, F_pars, eH, Apatch, z, phi)
+#dH2eq <- c(dsim2$H[1,tmax], dsim2$H[2,tmax], dsim2$H[3,tmax]) # same as for H01
+
+# plot timeseries and check default equilibria
+plot(x = dsim1$t, y = dsim1$H[1,], type = "l", ylim = c(0, max(as.vector(dsim1$H))), lty = 3, las = 1, xlab = "Time", ylab = "Host population size")
+lines(x = dsim1$t, y = dsim1$H[2,], lty = 2)
+lines(x = dsim1$t, y = dsim1$H[3,], lty = 1)
+legend("topleft", title = "Host size", c("small", "medium", "large"), lty = c(3, 2, 1))
+
+plot(x = dsim1$t, y = dsim1$P[1,], type = "l", ylim = c(0, max(as.vector(dsim1$P))), lty = 3, las = 1, xlab = "Time", ylab = "Partner population size")
+lines(x = dsim1$t, y = dsim1$P[2,], lty = 2)
+lines(x = dsim1$t, y = dsim1$P[3,], lty = 1)
+legend("topleft", title = "Host size", c("small", "medium", "large"), lty = c(3, 2, 1))
+    
+
+dsim1$H[,tmax]
+
+dsim1$P[,tmax]
+
+PH_def <- dsim1$P[,tmax]/dsim1$H[,tmax]
+PH_def
+
+```
+
+# SM figures showing model functions
+
+
+Host density independent mortality
+
+
+```{r}
+
+# set of host areas
+Aset_ex <- seq(from = 0, to = Amax, length.out = 1000)
+
+# repeat for 3 different densities of P per host
+PH_def <- c(0.15, 5, 15)
+
+#pdf("figures/nH_exp_cn.pdf", width = 9, height = 4)
+par(mfrow = c(2, 1))
+par(mar=c(0, 2.5, 0.5, 1.5), oma = c(3.5, 2.5, 2, 0))
+layout(matrix(c(1, 2), nrow = 1, ncol = 2, byrow = F), widths = rep(1, 2), heights = rep(1, 1))
+
+
+plot(x = Aset_ex, y = MofA(Aset_ex, a = a_n,b = b_n, c = MofP(c_n0, exp_c = 0.15, cn_mn, 0)), type = "l", las = 1, lty = 1, ylim = c(0, 0.2), xlab = NA, ylab = NA, col = "royalblue", lwd = 2) # , xaxs="i", yaxs="i"
+abline(v = c(Amin, Fmn, 0.9*Amax, Amax))
+lines(x = Aset_ex, y = MofA(Aset_ex, a = a_n,b = b_n, c = MofP(c_n0, exp_c = 0.15, cn_mn, PH_def[1])), lty = 1, lwd = 2)
+lines(x = Aset_ex, y = MofA(Aset_ex, a = a_n,b = b_n, c = MofP(c_n0, exp_c = 0.15, cn_mn, PH_def[2])), lty = 2, lwd = 1.5)
+lines(x = Aset_ex, y = MofA(Aset_ex, a = a_n,b = b_n, c = MofP(c_n0, exp_c = 0.15, cn_mn, PH_def[3])), lty = 3, lwd = 2)
+mtext(side = 1, "Host area", line = 2.25)
+mtext(side = 3, "a) nH(A)", adj = 0)
+mtext(side = 2, "Host DI mortality rate", line = 2.75)
+legend(x = "topright", legend = c("0", as.character(round(PH_def,2))), lwd = 3, col = c("royalblue", rep("black", 3)), lty = c(1, 1, 2, 3), ncol = 2, bty = "y", title = "Partners per host", bg = "white")
+
+
+# set of partner densities
+Pset_ex <- seq(from = 0, to = 25, length.out = 1000)
+
+# strength of defensive mutualism
+exp_cn_ex <- seq(from = 0, to = 1.25, by = 0.25)
+
+col_set <- c(adjustcolor("black", alpha.f = 1/10), adjustcolor("black", alpha.f = 2/10), adjustcolor("black", alpha.f = 3/10), adjustcolor("black", alpha.f = 4/10), adjustcolor("black", alpha.f = 5/10), adjustcolor("black", alpha.f = 6/10))
+
+plot(x = Pset_ex, y = MofP(c_n0, exp_c = exp_cn_ex[1], cn_mn, Pset_ex), type = "l", las = 1, ylim = c(0, 0.06), col = adjustcolor("black", alpha.f = 1/10), lwd = 2, xlab = NA, ylab = NA)
+for(i in 2:length(exp_cn_ex)){
+  lines(x = Pset_ex, y = MofP(c_n0, exp_c = exp_cn_ex[i], cn_mn, Pset_ex), col = adjustcolor("black", alpha.f = i/10), lwd = 2, type = "l")
+}
+mtext(side = 1, "Partners per host", line = 2.25)
+mtext(side = 2, "Asymptotic host DI mortality rate", line = 2.75)
+mtext(side = 3, "b) c_n(P/H)", adj = 0)
+legend(x = "right", legend = as.character(exp_cn_ex), lwd = 3, col = col_set, ncol = 2, bty = "n", title = "b_cn")
+
+#dev.off()
+
+```
+
+
+Host density dependent mortality
+
+```{r}
+
+#pdf("figures/mH.pdf", width = 5, height = 4)
+par(mfrow = c(1, 1))
+par(mar=c(0, 2.5, 0.5, 1.5), oma = c(3.5, 2.5, 2, 0))
+#layout(matrix(c(1, 2), nrow = 1, ncol = 2, byrow = F), widths = rep(1, 2), heights = rep(1, 1))
+
+
+plot(x = Aset_ex, y = MofA(Aset_ex, a = a_m,b = b_m, c = c_m), type = "l", las = 1, lty = 1, ylim = c(0, 0.2), xlab = NA, ylab = NA, lwd = 2)
+abline(h = c_m, lty = 2)
+abline(v = c(Amin, Fmn, 0.9*Amax, Amax))
+abline(h = c_m + a_m, lty = 2)
+text(x = 400, y = 0.19, "c + a")
+text(x = 400, y = 0.04, "c")
+mtext(side = 1, "Host area", line = 2.25)
+mtext(side = 2, "Host per capita mortality rate", line = 2.75)
+
+#dev.off()
+
+```
+
+
+
+```{r}
+
+# calculate monthly host survival probabilities for default parameters
+
+# c_n_ex <- MofP(c_n0, exp_c = 0, cn_mn, P = PH_def)
+# 
+# nH_ex <- c(avg_mort(Amin, A12, a_n, b_n, c_n_ex[1]), avg_mort(A12, A23, a_n, b_n, c_n_ex[2]), avg_mort(A23, Amax, a_n, b_n, c_n_ex[3]))
+# 
+# mH_ex <- c(avg_mort(Amin, A12, a_m, b_m, c_m), avg_mort(A12, A23, a_m, b_m, c_m), avg_mort(A23, Amax, a_m, b_m, c_m))
+# 
+# exp(-(nH_ex + mH_ex*sum(dsim1$H[,tmax]*A_mids)/Apatch))
+
+    
+
+```
+
+
+Host growth
+
+```{r}
+
+
+#pdf("figures/g_exp_g.pdf", width = 9, height = 4)
+par(mfrow = c(2, 1))
+par(mar=c(0, 2.5, 0.5, 1.5), oma = c(3.5, 2.5, 2, 0))
+layout(matrix(c(1, 2), nrow = 1, ncol = 2, byrow = F), widths = rep(1, 2), heights = rep(1, 1))
+
+
+#GofP(g0, exp_g, g_mx, P) = g0 + (g_mx-g0)*(1-exp(-exp_g*P))
+ 
+# set of host ages 
+age_set_ex <- seq(from = 0, to = 12*10, length.out = 1000)
+
+plot(x = age_set_ex, y = pi*((Dinf*(1-exp(-GofP(g0, exp_g, g_mx, P = 0)*age_set_ex)))/2)^2, type = "l", xlab = NA, ylab = NA, las = 1, col = "royalblue", ylim = c(0, Amax))
+mtext(side = 1, "Host age (months)", line = 2.25)
+mtext(side = 2, "Host area (cm^2)", line = 2.75)
+mtext(side = 3, "a) Area(t)", adj = 0)
+lines(x = age_set_ex, y = pi*((Dinf*(1-exp(-GofP(g0, exp_g = 1, g_mx, P = PH_def[1])*age_set_ex)))/2)^2, lty = 1, lwd = 2)
+lines(x = age_set_ex, y = pi*((Dinf*(1-exp(-GofP(g0, exp_g = 1, g_mx, P = PH_def[2])*age_set_ex)))/2)^2, lty = 2, lwd = 1.5)
+lines(x = age_set_ex, y = pi*((Dinf*(1-exp(-GofP(g0, exp_g = 1, g_mx, P = PH_def[3])*age_set_ex)))/2)^2, lty = 3, lwd = 2)
+legend(x = "bottomright", legend = c("0", as.character(round(PH_def, 2))), lwd = 3, col = c("royalblue", rep("black", 3)), lty = c(1, 1, 2, 3), ncol = 2, bty = "n", title = "Partners per host")
+#abline(v = log(1-sqrt(Fmn/pi)*2/Dinf)/-GofP(g0, exp_g, g_mx, P_test), col = "blue")
+#abline(v = log(1-sqrt(0.9*Amax/pi)*2/Dinf)/-GofP(g0, exp_g, g_mx, P_test), col = "red")
+#abline(v = c(12, 24, 36, 48), lty = 3) # years 1, 2, 3, 4
+
+# set of values for strength of nutritional mutualism
+exp_g_ex <- seq(from = 0, to = 1.25, by = 0.25)
+
+plot(x = Pset_ex, y = GofP(g0, exp_g = exp_g_ex[1], g_mx, Pset_ex), type = "l", las = 1, ylim = c(0, 0.1), col = adjustcolor("black", alpha.f = 1/10), lwd = 2, xlab = NA, ylab = NA)
+for(i in 2:length(exp_cn_ex)){
+  lines(x = Pset_ex, y = GofP(g0, exp_g = exp_g_ex[i], g_mx, Pset_ex), col = adjustcolor("black", alpha.f = i/10), lwd = 2, type = "l")
+}
+mtext(side = 1, "Partners per host", line = 2.25)
+mtext(side = 2, "Host growth rate", line = 2.75)
+mtext(side = 3, "b) g(P/H)", adj = 0)
+legend(x = "right", legend = as.character(exp_g_ex), lwd = 3, col = col_set, ncol = 2, bty = "n", title = "b_g")
+
+#dev.off()
+
+```
+
+
+
+```{r}
+
+# calculate host transition probabilities for default parameters
+
+# g_i_ex <- GofP(g0, exp_g = 1, g_mx, PH_def)
+#     
+# # calculate size class transitions
+# # class 1 to 2:
+# A0_1_ex <- S1ofA(A12, Dinf, g_i_ex[1])
+# G12_ex <- ifelse(A0_1_ex < Amin, 1, (A12-A0_1_ex)/(A12-Amin)) # proportion that grew into next size class
+# # if area at previous timestep is less than Amin, say 100% of class 1 grew to class 2
+#     
+# # class 2 to 3: 
+# A0_2_ex <- S1ofA(A23, Dinf, g_i_ex[2])
+# G23_ex <- ifelse(A0_2_ex < A12, 1, (A23-A0_2_ex)/(A23-A12)) # proportion that grew into next size class
+# # if area at previous timestep is in size class 1 (A02 < A12), say 100% of class 2 grew to class 3
+#     
+# G_ex <- c(G12_ex, G23_ex, 0)
+# 
+# G_ex*max(0, 1-sum(dsim1$H[,tmax]*A_mids)/Apatch)
+
+```
+
+
+
+```{r}
+
+# check that even at max growth rate, transition probabilities will be >1
+
+# A_mids <- c((Amin+Fmn)/2, (0.9*Amax+Fmn)/2, (Amax+0.9*Amax)/2) # used for calculating area occupied
+
+
+# S1ofA(Fmn, Dinf, g = g_mx) 
+# (A12-S1ofA(Fmn, Dinf, g = g_mx))/(A12-Amin) # boundary - area at previous timepoint divided by range of boundary
+# 
+# 
+# S1ofA(0.9*Amax, Dinf, g = g_mx) 
+# (A23-S1ofA(0.9*Amax, Dinf, g = g_mx))/(A23-A12) # boundary - area at previous timepoint divided by range of boundary
+# 
+# # check this holds even if there are 10 size classes
+# 
+# #A_bounds_test <- c(Amin, seq(from = 0.1, to = 0.9, by = 0.1)*Amax, Amax)
+# A_bounds_test <- seq(from = 0.1, to = 0.9, by = 0.1)*Amax
+# (A_bounds_test[1]-S1ofA(A_bounds_test[1], Dinf, g = g_mx))/(A_bounds_test[1]-Amin)
+# (A_bounds_test[2]-S1ofA(A_bounds_test[2], Dinf, g = g_mx))/(A_bounds_test[2]-A_bounds_test[1])
+# (A_bounds_test[3]-S1ofA(A_bounds_test[3], Dinf, g = g_mx))/(A_bounds_test[3]-A_bounds_test[2])
+# (A_bounds_test[4]-S1ofA(A_bounds_test[4], Dinf, g = g_mx))/(A_bounds_test[4]-A_bounds_test[3])
+# (A_bounds_test[5]-S1ofA(A_bounds_test[5], Dinf, g = g_mx))/(A_bounds_test[5]-A_bounds_test[4])
+# (A_bounds_test[6]-S1ofA(A_bounds_test[6], Dinf, g = g_mx))/(A_bounds_test[6]-A_bounds_test[5])
+# (A_bounds_test[7]-S1ofA(A_bounds_test[7], Dinf, g = g_mx))/(A_bounds_test[7]-A_bounds_test[6])
+# (A_bounds_test[8]-S1ofA(A_bounds_test[8], Dinf, g = g_mx))/(A_bounds_test[8]-A_bounds_test[7])
+# (A_bounds_test[9]-S1ofA(A_bounds_test[9], Dinf, g = g_mx))/(A_bounds_test[9]-A_bounds_test[8])
+
+
+
+```
+
+
+
+Host fecundity
+
+```{r}
+
+
+#pdf("figures/Fecundity.pdf", width = 3.5, height = 2.5)
+par(mfrow = c(1, 1))
+par(mar=c(0, 2.5, 0.5, 1.5), oma = c(3.5, 2.5, 2, 0))
+#layout(matrix(c(1, 2), nrow = 1, ncol = 2, byrow = F), widths = rep(1, 2), heights = rep(1, 1))
+
+plot(x = Aset_ex, y = FofA(Aset_ex, Fmn, Fconst, Fexp), type = "l", xlab = NA, ylab = NA, las = 1, lwd = 2)
+abline(v = c(Amin, Fmn, 0.9*Amax, Amax))
+mtext(side = 1, "Host area", line = 2.25)
+mtext(side = 2, "Fecundity", line = 2.5)
+
+#dev.off()
+
+```
+
+
+Partner density-dependent mortality
+
+```{r}
+
+#MPofA(K0, slope_mP, A)= 1/(slope_mP*A^(3/2) + K0)
+
+Aset_ex <- seq(from = Amin, to = Amax, length.out = 1000)
+
+#pdf("figures/KP_slope_mP.pdf", width = 9, height = 4)
+par(mfrow = c(2, 1))
+par(mar=c(0, 2.75, 0.5, 1.5), oma = c(3.5, 2.5, 2, 0))
+layout(matrix(c(1, 2), nrow = 1, ncol = 2, byrow = F), widths = rep(1, 2), heights = rep(1, 1))
+
+# K = slope_mP*V + K0
+plot(x = Aset_ex^(3/2), y = 0.0015*Aset_ex^(3/2) + K0, type = "l", xlab = NA, ylab = NA, las = 1, lwd = 2)
+lines(x = Aset_ex^(3/2), y = 0.00015*Aset_ex^(3/2) + K0, lty = 2)
+abline(v = c(Amin, Fmn, 0.9*Amax, Amax)^(3/2))
+mtext(side = 1, "Host volume", line = 2)
+mtext(side = 2, "Partner carrying capacity", line = 2.75)
+mtext(side = 3, "a) K(A)", adj = 0)
+legend("top", legend = c("s_mP = 0.0015", "s_mP = 0.00015"), lty = c(1, 2), lwd = 1.5, bty = "n")
+
+plot(x = Aset_ex, y = MPofA(K0, slope_mP = 0.0015, Aset_ex), type = "l", xlab = NA, ylab = NA, las = 1, lwd = 2, ylim = c(0, 190))
+lines(x = Aset_ex, y = MPofA(K0, slope_mP = 0.00015, Aset_ex), lty = 2)
+abline(v = c(Amin, Fmn, 0.9*Amax, Amax))
+mtext(side = 1, "Host area", line = 2)
+mtext(side = 2, "Partner density dependent \nmortality rate", line = 2.25)
+mtext(side = 3, "b) mP(A)", adj = 0)
+
+
+#dev.off()
+
+
+
+# check approximate carrying capacities of each host size class 
+ # 1/avg_Pmort(Amin, Fmn, K0, slope_mP = 0.001)
+ # 1/avg_Pmort(Fmn, 0.9*Amax, K0, slope_mP = 0.001)
+ # 1/avg_Pmort(0.9*Amax, Amax, K0, slope_mP = 0.001)
+
+```
+
+
+
+
+
