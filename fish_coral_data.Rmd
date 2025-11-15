@@ -338,9 +338,9 @@ Dcol <- "#7B8BA5"
 Ncol <- "#B66A40"
 
 
-Ppref.N1.evo <- c(0.03056071, 0.39069991, 0.57873937)
-Ppref.D1.evo <- c(0.02888623, 0.39186314, 0.57925063)
-Ppref.0 <- c(0.1228871, 0.3603216, 0.5167914)
+Ppref.N1.evo <- c(0.03056071, 0.39069991, 0.57873937) # from "model_simulations.Rmd"
+Ppref.D1.evo <- c(0.02888623, 0.39186314, 0.57925063) # from "model_simulations.Rmd"
+Ppref.0 <- c(0.1228871, 0.3603216, 0.5167914) # from "model_simulations.Rmd"
 
 #pdf("figures/model_fish_preferences.pdf", width = 9, height = 4)
 par(mfrow = c(2, 1))
