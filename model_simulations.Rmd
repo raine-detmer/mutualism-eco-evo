@@ -2128,7 +2128,7 @@ for(pp in 2:length(mut_test_set)){
 }
 #mtext(side = 1, "Strength of partner preference for adult hosts (phi)", line = 2.5, outer = T, cex = 1)
 mtext(side = 1, expression(Strength~of~partner~preference~'for'~adult~hosts~(phi)), line = 2.5, outer = T, cex = 1, adj = 0.3)
-mtext(side = 2, expression(Host~equilibrium~(m^2)), line = 3.5, cex = 1.1)
+mtext(side = 2, expression(Host~equilibrium~(cm^2)), line = 3.5, cex = 1.1)
 axis(side = 1, at = xaxt1)
 axis(side = 2, at = yaxt2, las = 1)
 
@@ -3443,7 +3443,7 @@ lines(x = g0_set.1, y = HA_eco.g0, lty = 1, lwd = lwd.2, col = Ncol)
 #mtext(side = 1, "Post-disturbance \n baseline host growth rate", line = 3.5, cex = 0.8)
 mtext(side = 1, expression(Post-disturbance~baseline), line = 2.25, cex = 0.8)
 mtext(side = 1, expression(host~growth~rate~(month^-1)), line = 3.75, cex = 0.8)
-mtext(side = 2, expression(Host~equilibrium~(m^2)), cex = 0.9, line = 3.25)
+mtext(side = 2, expression(Host~equilibrium~(cm^2)), cex = 0.9, line = 3.25)
 #abline(v = g0, lty = 3)
 
 plot(x = Fconst_set.1, y = HA_evo.Fconst, type = "l", lty = 2, ylim = c(0, ymax_HA), xlab = NA, ylab = NA, xaxt = "n", yaxt = "n", lwd = lwd.2, col = Ncol)
