@@ -609,9 +609,9 @@ abline(v = c(Amin, Fmn, 0.9*Amax, Amax))
 lines(x = Aset_ex, y = MofA(Aset_ex, a = a_n,b = b_n, c = MofP(c_n0, exp_c = 0.15, cn_mn, PH_def[1])), lty = 1, lwd = 2)
 lines(x = Aset_ex, y = MofA(Aset_ex, a = a_n,b = b_n, c = MofP(c_n0, exp_c = 0.15, cn_mn, PH_def[2])), lty = 2, lwd = 1.5)
 lines(x = Aset_ex, y = MofA(Aset_ex, a = a_n,b = b_n, c = MofP(c_n0, exp_c = 0.15, cn_mn, PH_def[3])), lty = 3, lwd = 2)
-mtext(side = 1, "Host area", line = 2.25)
-mtext(side = 3, "a) nH(A)", adj = 0)
-mtext(side = 2, "Host DI mortality rate", line = 2.75)
+mtext(side = 1, expression("Host area ("*cm^2*")"), line = 2.25)
+mtext(side = 3, expression("a)"~n[H]*"(A)"), adj = 0)
+mtext(side = 2, expression("Host DI mortality rate ("*month^-1*")"), line = 2.75)
 legend(x = "topright", legend = c("0", as.character(round(PH_def,2))), lwd = 3, col = c("royalblue", rep("black", 3)), lty = c(1, 1, 2, 3), ncol = 2, bty = "y", title = "Partners per host", bg = "white")
 
 
@@ -627,9 +627,9 @@ plot(x = Pset_ex, y = MofP(c_n0, exp_c = exp_cn_ex[1], cn_mn, Pset_ex), type = "
 for(i in 2:length(exp_cn_ex)){
   lines(x = Pset_ex, y = MofP(c_n0, exp_c = exp_cn_ex[i], cn_mn, Pset_ex), col = adjustcolor("black", alpha.f = i/10), lwd = 2, type = "l")
 }
-mtext(side = 1, "Partners per host", line = 2.25)
-mtext(side = 2, "Asymptotic host DI mortality rate", line = 2.75)
-mtext(side = 3, "b) c_n(P/H)", adj = 0)
+mtext(side = 1, "Partners per host (no.)", line = 2.25)
+mtext(side = 2, expression("Asymptotic host DI mortality rate ("*month^-1*")"), line = 2.75)
+mtext(side = 3, expression("b)"~c[n]*"(P/H)"), adj = 0)
 legend(x = "right", legend = as.character(exp_cn_ex), lwd = 3, col = col_set, ncol = 2, bty = "n", title = "b_cn")
 
 #dev.off()
@@ -697,7 +697,7 @@ age_set_ex <- seq(from = 0, to = 12*10, length.out = 1000)
 
 plot(x = age_set_ex, y = pi*((Dinf*(1-exp(-GofP(g0, exp_g, g_mx, P = 0)*age_set_ex)))/2)^2, type = "l", xlab = NA, ylab = NA, las = 1, col = "royalblue", ylim = c(0, Amax))
 mtext(side = 1, "Host age (months)", line = 2.25)
-mtext(side = 2, "Host area (cm^2)", line = 2.75)
+mtext(side = 2, expression("Host area ("*cm^2*")"), line = 2.75)
 mtext(side = 3, "a) Area(t)", adj = 0)
 lines(x = age_set_ex, y = pi*((Dinf*(1-exp(-GofP(g0, exp_g = 1, g_mx, P = PH_def[1])*age_set_ex)))/2)^2, lty = 1, lwd = 2)
 lines(x = age_set_ex, y = pi*((Dinf*(1-exp(-GofP(g0, exp_g = 1, g_mx, P = PH_def[2])*age_set_ex)))/2)^2, lty = 2, lwd = 1.5)
@@ -714,8 +714,8 @@ plot(x = Pset_ex, y = GofP(g0, exp_g = exp_g_ex[1], g_mx, Pset_ex), type = "l", 
 for(i in 2:length(exp_cn_ex)){
   lines(x = Pset_ex, y = GofP(g0, exp_g = exp_g_ex[i], g_mx, Pset_ex), col = adjustcolor("black", alpha.f = i/10), lwd = 2, type = "l")
 }
-mtext(side = 1, "Partners per host", line = 2.25)
-mtext(side = 2, "Host growth rate", line = 2.75)
+mtext(side = 1, "Partners per host (no.)", line = 2.25)
+mtext(side = 2, expression("Host growth rate ("*month^-1*")"), line = 2.75)
 mtext(side = 3, "b) g(P/H)", adj = 0)
 legend(x = "right", legend = as.character(exp_g_ex), lwd = 3, col = col_set, ncol = 2, bty = "n", title = "b_g")
 

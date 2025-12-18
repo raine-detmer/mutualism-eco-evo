@@ -1691,7 +1691,7 @@ mtext(side = 1, xlab, line = 2.5)
 plot(x = xset, y = Htot_N0, ylim = ylims.2, type = "l", las = 1, col = Ncol, lty = 1, lwd = lwd.1, yaxt = "n", xaxt = "n", xlab = NA, ylab = NA)
 mtext(side = 3, "b) H*, nutritional mutualism", adj = 0.05, line = -1, cex = 0.9)
 mtext(side = 2, "Host cover", line = 3.25, cex = 1.2)
-mtext(side = 1, "Strength of nutritional mutualism", line = 2)
+mtext(side = 1, expression("Strength of nutritional mutualism ("*b[g]*")"), line = 2.5)
 axis(side = 1, at = xaxs, las = 1)
 axis(side = 2, at = yaxs2, las = 1)
 #mtext(side = 1, xlab, line = 2.5)
@@ -1699,7 +1699,7 @@ axis(side = 2, at = yaxs2, las = 1)
 
 plot(x = xset, y = Htot_D0, ylim = ylims.2, type = "l", las = 1, col = Dcol, lty = 1, lwd = lwd.1, yaxt = "n", xaxt = "n", xlab = NA, ylab = NA)
 mtext(side = 3, "d) H*, defensive mutualism", adj = 0.05, line = -1, cex = 0.9)
-mtext(side = 1, "Strength of defensive mutualism", line = 2)
+mtext(side = 1, expression("Strength of defensive mutualism ("*b[cn]*")"), line = 2.5)
 axis(side = 1, at = xaxs, las = 1)
 axis(side = 2, at = yaxs2, las = 1, labels = NA)
 mtext(side = 1, xlab, line = 2.5)
@@ -2914,8 +2914,8 @@ mtext(side = 3, expression("A)"~phi*", Nutritional mutualism"), adj = 0.05, line
 mtext(side = 1, expression("Strength of partner's effect on host growth"~"("*b[g]*")"), line = 2, outer = F, cex = 0.9)
 #mtext(side = 3, "Nutritional mutualism")
 mtext(side = 1, xlab, line = 2.5)
-mtext(side = 2, expression(Strength~of~partner~preference), line = 3.75, cex = 0.95)
-mtext(side = 2, expression('for'~adult~hosts~(phi)), line = 2.5, cex = 0.95)
+mtext(side = 2, expression(Predicted~strength~of~partner), line = 3.75, cex = 0.95)
+mtext(side = 2, expression(preference~'for'~adult~hosts~(phi)), line = 2.5, cex = 0.95)
 lines(x = xset, y = ecoevo.p$evo_phi, col = Ncol, lty = lty.evo, lwd = lwd.1)
 legend("right", legend = c("Partner maximizing", "Partner ESS"), lty = c(lty.eco, lty.evo), lwd = 2, bty = "n", col = "gray20", cex = 1.1)
 
@@ -3222,8 +3222,9 @@ now vary post-disturbance g0, Fconst, and c_n0
 
 ```{r}
 
+tmax2 <- 1500
 
-length.2 <- 10
+length.2 <- 20
 g0_set.1 <- seq(from = 0.1*g0, to = g0, length.out = length.2)
 
 # time to recovery (host)
@@ -3248,25 +3249,25 @@ for(i in 1:length.2){
 G_pars.5 <- G_pars.4
 G_pars.5$g0 <- g0_set.1[i]
 
-evo.p <- mod_fun3(tmax, P0 = R0.0*p123, H0 = H0.0*p123, rP, nP, mP_pars, eP, nH_pars.4, mH_pars, G_pars.5, F_pars, eH, Apatch, z, phi = phi_evo)
-eco.p <- mod_fun3(tmax, P0 = R0.0*p123, H0 = H0.0*p123, rP, nP, mP_pars, eP, nH_pars.4, mH_pars, G_pars.5, F_pars, eH, Apatch, z, phi = phi_eco)
+evo.p <- mod_fun3(tmax2, P0 = R0.0*p123, H0 = H0.0*p123, rP, nP, mP_pars, eP, nH_pars.4, mH_pars, G_pars.5, F_pars, eH, Apatch, z, phi = phi_evo)
+eco.p <- mod_fun3(tmax2, P0 = R0.0*p123, H0 = H0.0*p123, rP, nP, mP_pars, eP, nH_pars.4, mH_pars, G_pars.5, F_pars, eH, Apatch, z, phi = phi_eco)
 
 HA_evo <- apply(evo.p$H*A_mids, 2, sum)
 HA_eco <- apply(eco.p$H*A_mids, 2, sum)
 
-HA_evo.g0[i] <- HA_evo[tmax]
-HA_eco.g0[i] <- HA_eco[tmax]
+HA_evo.g0[i] <- HA_evo[tmax2]
+HA_eco.g0[i] <- HA_eco[tmax2]
 
-tr_eco.g0[i] <- min(which(abs((HA_eco-HA_eco[tmax])) < 0.01*HA_eco[tmax]))
-tr_evo.g0[i] <- min(which(abs((HA_evo-HA_evo[tmax])) < 0.01*HA_evo[tmax]))
+tr_eco.g0[i] <- min(which(abs((HA_eco-HA_eco[tmax2])) < 0.01*HA_eco[tmax2]))
+tr_evo.g0[i] <- min(which(abs((HA_evo-HA_evo[tmax2])) < 0.01*HA_evo[tmax2]))
 
 Ptot_evo <- apply(evo.p$P, 2, sum)
 Ptot_eco <- apply(eco.p$P, 2, sum)
-P_evo.g0[i] <- Ptot_evo[tmax]
-P_eco.g0[i] <- Ptot_eco[tmax]
+P_evo.g0[i] <- Ptot_evo[tmax2]
+P_eco.g0[i] <- Ptot_eco[tmax2]
 
-tr_eco.g0.P[i] <- min(which(abs((Ptot_eco-Ptot_eco[tmax])) < 0.01*Ptot_eco[tmax]))
-tr_evo.g0.P[i] <- min(which(abs((Ptot_evo-Ptot_evo[tmax])) < 0.01*Ptot_evo[tmax]))
+tr_eco.g0.P[i] <- min(which(abs((Ptot_eco-Ptot_eco[tmax2])) < 0.01*Ptot_eco[tmax2]))
+tr_evo.g0.P[i] <- min(which(abs((Ptot_evo-Ptot_evo[tmax2])) < 0.01*Ptot_evo[tmax2]))
 
 
   
@@ -3274,7 +3275,8 @@ tr_evo.g0.P[i] <- min(which(abs((Ptot_evo-Ptot_evo[tmax])) < 0.01*Ptot_evo[tmax]
 
 
 
-Fconst_set.1 <- seq(from = 0.5*Fconst, to = Fconst, length.out = length.2)
+#Fconst_set.1 <- seq(from = 0.5*Fconst, to = Fconst, length.out = length.2)
+Fconst_set.1 <- seq(from = 0.1*Fconst, to = Fconst, length.out = length.2)
 
 tr_eco.Fconst <- rep(NA, length.2)
 tr_evo.Fconst <- rep(NA, length.2)
@@ -3294,31 +3296,32 @@ for(i in 1:length.2){
 F_pars.5 <- F_pars
 F_pars.5$Fconst <- Fconst_set.1[i]
 
-evo.p <- mod_fun3(tmax, P0 = R0.0*p123, H0 = H0.0*p123, rP, nP, mP_pars, eP, nH_pars.4, mH_pars, G_pars.4, F_pars.5, eH, Apatch, z, phi = phi_evo)
-eco.p <- mod_fun3(tmax, P0 = R0.0*p123, H0 = H0.0*p123, rP, nP, mP_pars, eP, nH_pars.4, mH_pars, G_pars.4, F_pars.5, eH, Apatch, z, phi = phi_eco)
+evo.p <- mod_fun3(tmax2, P0 = R0.0*p123, H0 = H0.0*p123, rP, nP, mP_pars, eP, nH_pars.4, mH_pars, G_pars.4, F_pars.5, eH, Apatch, z, phi = phi_evo)
+eco.p <- mod_fun3(tmax2, P0 = R0.0*p123, H0 = H0.0*p123, rP, nP, mP_pars, eP, nH_pars.4, mH_pars, G_pars.4, F_pars.5, eH, Apatch, z, phi = phi_eco)
 
 HA_evo <- apply(evo.p$H*A_mids, 2, sum)
 HA_eco <- apply(eco.p$H*A_mids, 2, sum)
 
-HA_evo.Fconst[i] <- HA_evo[tmax]
-HA_eco.Fconst[i] <- HA_eco[tmax]
+HA_evo.Fconst[i] <- HA_evo[tmax2]
+HA_eco.Fconst[i] <- HA_eco[tmax2]
 
-tr_eco.Fconst[i] <- min(which(abs((HA_eco-HA_eco[tmax])) < 0.01*HA_eco[tmax]))
-tr_evo.Fconst[i] <- min(which(abs((HA_evo-HA_evo[tmax])) < 0.01*HA_evo[tmax]))
+tr_eco.Fconst[i] <- min(which(abs((HA_eco-HA_eco[tmax2])) < 0.01*HA_eco[tmax2]))
+tr_evo.Fconst[i] <- min(which(abs((HA_evo-HA_evo[tmax2])) < 0.01*HA_evo[tmax2]))
 
 Ptot_evo <- apply(evo.p$P, 2, sum)
 Ptot_eco <- apply(eco.p$P, 2, sum)
-P_evo.Fconst[i] <- Ptot_evo[tmax]
-P_eco.Fconst[i] <- Ptot_eco[tmax]
+P_evo.Fconst[i] <- Ptot_evo[tmax2]
+P_eco.Fconst[i] <- Ptot_eco[tmax2]
 
-tr_eco.Fconst.P[i] <- min(which(abs((Ptot_eco-Ptot_eco[tmax])) < 0.01*Ptot_eco[tmax]))
-tr_evo.Fconst.P[i] <- min(which(abs((Ptot_evo-Ptot_evo[tmax])) < 0.01*Ptot_evo[tmax]))
+tr_eco.Fconst.P[i] <- min(which(abs((Ptot_eco-Ptot_eco[tmax2])) < 0.01*Ptot_eco[tmax2]))
+tr_evo.Fconst.P[i] <- min(which(abs((Ptot_evo-Ptot_evo[tmax2])) < 0.01*Ptot_evo[tmax2]))
 
   
 }
 
 
-c_n0_set.1 <- seq(from = c_n0, to = 1.75*c_n0, length.out = length.2)
+#c_n0_set.1 <- seq(from = c_n0, to = 1.75*c_n0, length.out = length.2)
+c_n0_set.1 <- seq(from = c_n0, to = 1.9*c_n0, length.out = length.2)
 
 tr_eco.c_n0 <- rep(NA, length.2)
 tr_evo.c_n0 <- rep(NA, length.2)
@@ -3338,25 +3341,25 @@ for(i in 1:length.2){
 nH_pars.5 <- nH_pars.4
 nH_pars.5$c_n0 <- c_n0_set.1[i]
 
-evo.p <- mod_fun3(tmax, P0 = R0.0*p123, H0 = H0.0*p123, rP, nP, mP_pars, eP, nH_pars.5, mH_pars, G_pars.4, F_pars, eH, Apatch, z, phi = phi_evo)
-eco.p <- mod_fun3(tmax, P0 = R0.0*p123, H0 = H0.0*p123, rP, nP, mP_pars, eP, nH_pars.5, mH_pars, G_pars.4, F_pars, eH, Apatch, z, phi = phi_eco)
+evo.p <- mod_fun3(tmax2, P0 = R0.0*p123, H0 = H0.0*p123, rP, nP, mP_pars, eP, nH_pars.5, mH_pars, G_pars.4, F_pars, eH, Apatch, z, phi = phi_evo)
+eco.p <- mod_fun3(tmax2, P0 = R0.0*p123, H0 = H0.0*p123, rP, nP, mP_pars, eP, nH_pars.5, mH_pars, G_pars.4, F_pars, eH, Apatch, z, phi = phi_eco)
 
 HA_evo <- apply(evo.p$H*A_mids, 2, sum)
 HA_eco <- apply(eco.p$H*A_mids, 2, sum)
 
-HA_evo.c_n0[i] <- HA_evo[tmax]
-HA_eco.c_n0[i] <- HA_eco[tmax]
+HA_evo.c_n0[i] <- HA_evo[tmax2]
+HA_eco.c_n0[i] <- HA_eco[tmax2]
 
-tr_eco.c_n0[i] <- min(which(abs((HA_eco-HA_eco[tmax])) < 0.01*HA_eco[tmax]))
-tr_evo.c_n0[i] <- min(which(abs((HA_evo-HA_evo[tmax])) < 0.01*HA_evo[tmax]))
+tr_eco.c_n0[i] <- min(which(abs((HA_eco-HA_eco[tmax2])) < 0.01*HA_eco[tmax2]))
+tr_evo.c_n0[i] <- min(which(abs((HA_evo-HA_evo[tmax2])) < 0.01*HA_evo[tmax2]))
 
 Ptot_evo <- apply(evo.p$P, 2, sum)
 Ptot_eco <- apply(eco.p$P, 2, sum)
-P_evo.c_n0[i] <- Ptot_evo[tmax]
-P_eco.c_n0[i] <- Ptot_eco[tmax]
+P_evo.c_n0[i] <- Ptot_evo[tmax2]
+P_eco.c_n0[i] <- Ptot_eco[tmax2]
 
-tr_eco.c_n0.P[i] <- min(which(abs((Ptot_eco-Ptot_eco[tmax])) < 0.01*Ptot_eco[tmax]))
-tr_evo.c_n0.P[i] <- min(which(abs((Ptot_evo-Ptot_evo[tmax])) < 0.01*Ptot_evo[tmax]))
+tr_eco.c_n0.P[i] <- min(which(abs((Ptot_eco-Ptot_eco[tmax2])) < 0.01*Ptot_eco[tmax2]))
+tr_evo.c_n0.P[i] <- min(which(abs((Ptot_evo-Ptot_evo[tmax2])) < 0.01*Ptot_evo[tmax2]))
 
   
 }
@@ -3392,80 +3395,96 @@ tr_evo.c_n0.P[i] <- min(which(abs((Ptot_evo-Ptot_evo[tmax])) < 0.01*Ptot_evo[tma
 ```{r}
 
 
-lwd.2 <- 2
-
-xaxt.g0 <- seq(from = 0, to = 0.025, by = 0.005)
-xaxt.Fconst <- seq(from = 0, to = 0.25, by = 0.03)
-xaxt.c_n0 <- seq(from = 0.05, to = 0.1, by = 0.01)
-
-
-#pdf("figures/eco_evo_tr.pdf", width = 8, height = 5)
-
-par(mfrow = c(2, 3))
-layout(matrix(c(1, 2, 3, 4, 5, 6), nrow = 2, ncol = 3, byrow = T), widths = rep(1, 3), heights = rep(1, 2))
-#layout.show(12)
-par(mar=c(0, 1.25, 0.5, 0), oma = c(5, 4.5, 2, 0.5))
-
-ymax_tr <- 1000
-yaxt2 <- seq(from = 0, to = ymax_tr, by = 250)
-
-
-plot(x = g0_set.1, y = tr_evo.g0.P, type = "l", lty = 2, ylim = c(0, ymax_tr), xlab = NA, ylab = NA, xaxt = "n", yaxt = "n", lwd = lwd.2, col = Ncol)
-lines(x = g0_set.1, y = tr_eco.g0.P, lty = 1, lwd = lwd.2, col = Ncol)
-axis(side = 1, at = xaxt.g0, labels = NA)
-axis(side = 2, at = yaxt2, las = 1)
-mtext(side = 3, "Disturbance + reduced growth rate", cex = 0.9)
-mtext(side = 2, "Recovery time (months)", cex = 0.9, line = 3)
-legend("topright", legend = c("Partner maximizing", "Partner ESS"), lty = c(1, 2), lwd = lwd.2, bty = "n", col = Ncol, cex = 1.1)
-#abline(v = g0, lty = 3)
-
-plot(x = Fconst_set.1, y = tr_evo.Fconst.P, type = "l", lty = 2, ylim = c(0, ymax_tr), xlab = NA, ylab = NA, xaxt = "n", yaxt = "n", lwd = lwd.2, col = Ncol)
-axis(side = 1, at = xaxt.Fconst, labels = NA)
-axis(side = 2, at = yaxt2, labels = NA)
-lines(x = Fconst_set.1, y = tr_eco.Fconst.P, lty = 1, lwd = lwd.2, col = Ncol)
-mtext(side = 3, "Disturbance + reduced fecundity", cex = 0.9)
-#abline(v = Fconst, lty = 3)
-
-plot(x = c_n0_set.1, y = tr_evo.c_n0.P, type = "l", lty = 2, ylim = c(0, ymax_tr), xlab = NA, ylab = NA, xaxt = "n", yaxt = "n", lwd = lwd.2, col = Ncol)
-axis(side = 1, at = xaxt.c_n0, labels = NA)
-axis(side = 2, at = yaxt2, labels = NA)
-lines(x = c_n0_set.1, y = tr_eco.c_n0.P, lty = 1, lwd = lwd.2, col = Ncol)
-mtext(side = 3, "Disturbance + increased mortality", cex = 0.9)
-#abline(v = c_n0, lty = 3)
-
-ymax_HA <- 64000
-yaxt2 <- seq(from = 0, to = ymax_HA, by = 10000)
-
-plot(x = g0_set.1, y = HA_evo.g0, type = "l", lty = 2, ylim = c(0, ymax_HA), xlab = NA, ylab = NA, xaxt = "n", yaxt = "n", lwd = lwd.2, col = Ncol)
-axis(side = 1, at = xaxt.g0)
-axis(side = 2, at = yaxt2, las = 1)
-lines(x = g0_set.1, y = HA_eco.g0, lty = 1, lwd = lwd.2, col = Ncol)
-#mtext(side = 1, "Post-disturbance \n baseline host growth rate", line = 3.5, cex = 0.8)
-mtext(side = 1, expression(Post-disturbance~baseline), line = 2.25, cex = 0.8)
-mtext(side = 1, expression(host~growth~rate~(month^-1)), line = 3.75, cex = 0.8)
-mtext(side = 2, expression(Host~equilibrium~(cm^2)), cex = 0.9, line = 3.25)
-#abline(v = g0, lty = 3)
-
-plot(x = Fconst_set.1, y = HA_evo.Fconst, type = "l", lty = 2, ylim = c(0, ymax_HA), xlab = NA, ylab = NA, xaxt = "n", yaxt = "n", lwd = lwd.2, col = Ncol)
-axis(side = 1, at = xaxt.Fconst)
-axis(side = 2, at = yaxt2, labels = NA)
-lines(x = Fconst_set.1, y = HA_eco.Fconst, lty = 1, lwd = lwd.2, col = Ncol)
-#mtext(side = 1, "Post-disturbance \n host fecundity", line = 3.5, cex = 0.8)
-mtext(side = 1, expression(Post-disturbance~host), line = 2.25, cex = 0.8)
-mtext(side = 1, expression(fecundity~(month^-1)), line = 3.75, cex = 0.8)
-#abline(v = Fconst, lty = 3)
-
-plot(x = c_n0_set.1, y = HA_evo.c_n0, type = "l", lty = 2, ylim = c(0, ymax_HA), xlab = NA, ylab = NA, xaxt = "n", yaxt = "n", lwd = lwd.2, col = Ncol)
-axis(side = 1, at = xaxt.c_n0)
-axis(side = 2, at = yaxt2, labels = NA)
-lines(x = c_n0_set.1, y = HA_eco.c_n0, lty = 1, lwd = lwd.2, col = Ncol)
-#mtext(side = 1, "Post-disturbance \n host DI mortality rate", line = 3.5, cex = 0.8)
-mtext(side = 1, expression(Post-disturbance~host), line = 2.25, cex = 0.8)
-mtext(side = 1, expression(DI~mortality~(month^-1)), line = 3.75, cex = 0.8)
-#abline(v = c_n0, lty = 3)
-
-#dev.off()
-
+# lwd.2 <- 2
+# 
+# # xaxt.g0 <- seq(from = 0, to = 0.025, by = 0.005)
+# # xaxt.Fconst <- seq(from = 0, to = 0.25, by = 0.03)
+# # xaxt.c_n0 <- seq(from = 0.05, to = 0.1, by = 0.01)
+# 
+# 
+# xaxt.g0 <- seq(from = 0, to = 0.9, by = 0.2)
+# xaxt.Fconst <- seq(from = 0, to = 0.9, by = 0.2)
+# xaxt.c_n0 <- seq(from = 0, to = 0.9, by = 0.2)
+# 
+# 
+# # replace recovery times for cases where the population dies with NA
+# eco_indx <- which(HA_eco.Fconst < sum(H0.0*p123*A_mids)) # less than initial conditions
+# evo_indx <- which(HA_eco.Fconst < sum(H0.0*p123*A_mids))
+# 
+# tr_evo.Fconst.Pp <- tr_evo.Fconst.P
+# tr_eco.Fconst.Pp <- tr_eco.Fconst.P
+# 
+# tr_evo.Fconst.Pp[evo_indx] <- NA
+# tr_eco.Fconst.Pp[eco_indx] <- NA
+# 
+# pdf("figures/eco_evo_tr.pdf", width = 8, height = 5)
+# 
+# par(mfrow = c(2, 3))
+# layout(matrix(c(1, 2, 3, 4, 5, 6), nrow = 2, ncol = 3, byrow = T), widths = rep(1, 3), heights = rep(1, 2))
+# #layout.show(12)
+# par(mar=c(0, 1.25, 0.5, 0), oma = c(5, 4.5, 2, 0.5))
+# 
+# ymax_tr <- 1000
+# yaxt2 <- seq(from = 0, to = ymax_tr, by = 250)
+# 
+# 
+# plot(x = rev(abs((g0_set.1-g0)/g0)), y = rev(tr_evo.g0.P), type = "l", lty = 2, ylim = c(0, ymax_tr), xlab = NA, ylab = NA, xaxt = "n", yaxt = "n", lwd = lwd.2, col = Ncol)
+# lines(x = rev(abs((g0_set.1-g0)/g0)), y = rev(tr_eco.g0.P), lty = 1, lwd = lwd.2, col = Ncol)
+# axis(side = 1, at = xaxt.g0, labels = NA)
+# axis(side = 2, at = yaxt2, las = 1)
+# mtext(side = 3, expression("Decreased host growth rate ("*g[0]*")"), cex = 0.9)
+# mtext(side = 2, "Recovery time (months)", cex = 0.9, line = 3)
+# legend("topleft", legend = c("Partner maximizing", "Partner ESS"), lty = c(1, 2), lwd = lwd.2, bty = "n", col = Ncol, cex = 1.1)
+# #abline(v = g0, lty = 3)
+# 
+# plot(x = rev(abs((Fconst_set.1 - Fconst)/Fconst)), y = rev(tr_evo.Fconst.Pp), type = "l", lty = 2, ylim = c(0, ymax_tr), xlab = NA, ylab = NA, xaxt = "n", yaxt = "n", lwd = lwd.2, col = Ncol)
+# axis(side = 1, at = xaxt.Fconst, labels = NA)
+# axis(side = 2, at = yaxt2, labels = NA)
+# lines(x = rev(abs((Fconst_set.1 - Fconst)/Fconst)), y = rev(tr_eco.Fconst.Pp), lty = 1, lwd = lwd.2, col = Ncol)
+# mtext(side = 3, expression("Decreased host fecundity ("*F[const]*")"), cex = 0.9)
+# #abline(v = Fconst, lty = 3)
+# 
+# plot(x = (c_n0_set.1-c_n0)/c_n0, y = tr_evo.c_n0.P, type = "l", lty = 2, ylim = c(0, ymax_tr), xlab = NA, ylab = NA, xaxt = "n", yaxt = "n", lwd = lwd.2, col = Ncol)
+# axis(side = 1, at = xaxt.c_n0, labels = NA)
+# axis(side = 2, at = yaxt2, labels = NA)
+# lines(x = (c_n0_set.1-c_n0)/c_n0, y = tr_eco.c_n0.P, lty = 1, lwd = lwd.2, col = Ncol)
+# mtext(side = 3, expression("Increased host mortality ("*c[n0]*")"), cex = 0.9)
+# #abline(v = c_n0, lty = 3)
+# 
+# ymax_HA <- 64000
+# yaxt2 <- seq(from = 0, to = ymax_HA, by = 10000)
+# 
+# plot(x = rev(abs((g0_set.1-g0)/g0)), y = rev(HA_evo.g0), type = "l", lty = 2, ylim = c(0, ymax_HA), xlab = NA, ylab = NA, xaxt = "n", yaxt = "n", lwd = lwd.2, col = Ncol)
+# axis(side = 1, at = xaxt.g0, labels = xaxt.g0*100)
+# axis(side = 2, at = yaxt2, las = 1)
+# lines(x = rev(abs((g0_set.1-g0)/g0)), y = rev(HA_eco.g0), lty = 1, lwd = lwd.2, col = Ncol)
+# #mtext(side = 1, "Post-disturbance \n baseline host growth rate", line = 3.5, cex = 0.8)
+# #mtext(side = 1, expression(Post-disturbance~baseline), line = 2.25, cex = 0.8)
+# #mtext(side = 1, expression(host~growth~rate~(month^-1)), line = 3.75, cex = 0.8)
+# mtext(side = 1, "Strength of press disturbance (percent increase or decrease in parameter)", outer = T, line = 2.5) #adj = -0.2
+# mtext(side = 2, expression(Host~equilibrium~(cm^2)), cex = 0.9, line = 3.25)
+# #abline(v = g0, lty = 3)
+# 
+# plot(x = rev(abs((Fconst_set.1 - Fconst)/Fconst)), y = rev(HA_evo.Fconst), type = "l", lty = 2, ylim = c(0, ymax_HA), xlab = NA, ylab = NA, xaxt = "n", yaxt = "n", lwd = lwd.2, col = Ncol)
+# axis(side = 1, at = xaxt.Fconst, labels = xaxt.Fconst*100)
+# axis(side = 2, at = yaxt2, labels = NA)
+# lines(x = rev(abs((Fconst_set.1 - Fconst)/Fconst)), y = rev(HA_eco.Fconst), lty = 1, lwd = lwd.2, col = Ncol)
+# #mtext(side = 1, "Post-disturbance \n host fecundity", line = 3.5, cex = 0.8)
+# #mtext(side = 1, expression(Post-disturbance~host), line = 2.25, cex = 0.8)
+# #mtext(side = 1, expression(fecundity~(month^-1)), line = 3.75, cex = 0.8)
+# #abline(v = Fconst, lty = 3)
+# 
+# plot(x = (c_n0_set.1-c_n0)/c_n0, y = HA_evo.c_n0, type = "l", lty = 2, ylim = c(0, ymax_HA), xlab = NA, ylab = NA, xaxt = "n", yaxt = "n", lwd = lwd.2, col = Ncol)
+# axis(side = 1, at = xaxt.c_n0, labels = xaxt.c_n0*100)
+# axis(side = 2, at = yaxt2, labels = NA)
+# lines(x = (c_n0_set.1-c_n0)/c_n0, y = HA_eco.c_n0, lty = 1, lwd = lwd.2, col = Ncol)
+# #mtext(side = 1, "Post-disturbance \n host DI mortality rate", line = 3.5, cex = 0.8)
+# #mtext(side = 1, expression(Post-disturbance~host), line = 2.25, cex = 0.8)
+# #mtext(side = 1, expression(DI~mortality~(month^-1)), line = 3.75, cex = 0.8)
+# #abline(v = c_n0, lty = 3)
+# 
+# dev.off()
+# 
 
 
 ```
@@ -3476,58 +3495,177 @@ SM figure: same as above but showing partner abundance instead of host cover, al
 ```{r}
 
 
-#pdf("figures/eco_evo_trP.pdf", width = 8, height = 3)
-
-par(mfrow = c(2, 3))
-layout(matrix(c(1, 2, 3), nrow = 1, ncol = 3, byrow = T), widths = rep(1, 3), heights = rep(1, 1))
-#layout.show(12)
-par(mar=c(0, 1.25, 0.5, 0), oma = c(5, 4.5, 2, 0.5))
-
-
-ymax_P <- 500
-yaxt2 <- seq(from = 0, to = ymax_P, by = 100)
-
-plot(x = g0_set.1, y = P_evo.g0, type = "l", lty = 2, ylim = c(0, ymax_P), xlab = NA, ylab = NA, xaxt = "n", yaxt = "n", lwd = lwd.2, col = Ncol)
-axis(side = 2, at = yaxt2, las = 1)
-axis(side = 1, at = xaxt.g0)
-axis(side = 2, at = yaxt2, las = 1)
-mtext(side = 3, "Disturbance + reduced growth rate", cex = 0.9)
-lines(x = g0_set.1, y = P_eco.g0, lty = 1, lwd = lwd.2, col = Ncol)
-#mtext(side = 1, "Post-disturbance \n baseline host growth rate", line = 3.5, cex = 0.8)
-mtext(side = 1, expression(Post-disturbance~baseline), line = 2.25, cex = 0.8)
-mtext(side = 1, expression(host~growth~rate~(month^-1)), line = 3.75, cex = 0.8)
-mtext(side = 2, "Partner equilibrium (no.)", cex = 0.9, line = 3)
-legend("bottomright", legend = c("Partner maximizing", "Partner ESS"), lty = c(1, 2), lwd = lwd.2, bty = "n", col = Ncol, cex = 1.1)
-#abline(v = g0, lty = 3)
-
-plot(x = Fconst_set.1, y = P_evo.Fconst, type = "l", lty = 2, ylim = c(0, ymax_P), xlab = NA, ylab = NA, xaxt = "n", yaxt = "n", lwd = lwd.2, col = Ncol)
-axis(side = 1, at = xaxt.Fconst)
-axis(side = 2, at = yaxt2, labels = NA)
-lines(x = Fconst_set.1, y = P_eco.Fconst, lty = 1, lwd = lwd.2, col = Ncol)
-#mtext(side = 1, "Post-disturbance \n host fecundity", line = 3.5, cex = 0.8)
-mtext(side = 1, expression(Post-disturbance~host), line = 2.25, cex = 0.8)
-mtext(side = 1, expression(fecundity~(month^-1)), line = 3.75, cex = 0.8)
-mtext(side = 3, "Disturbance + reduced fecundity", cex = 0.9)
-#abline(v = Fconst, lty = 3)
-
-
-plot(x = c_n0_set.1, y = P_evo.c_n0, type = "l", lty = 2, ylim = c(0, ymax_P), xlab = NA, ylab = NA, xaxt = "n", yaxt = "n", lwd = lwd.2, col = Ncol)
-axis(side = 1, at = xaxt.c_n0)
-axis(side = 2, at = yaxt2, labels = NA)
-lines(x = c_n0_set.1, y = P_eco.c_n0, lty = 1, lwd = lwd.2, col = Ncol)
-#mtext(side = 1, "Post-disturbance \n host DI mortality rate", line = 3.5, cex = 0.8)
-mtext(side = 1, expression(Post-disturbance~host), line = 2.25, cex = 0.8)
-mtext(side = 1, expression(DI~mortality~(month^-1)), line = 3.75, cex = 0.8)
-mtext(side = 3, "Disturbance + increased mortality", cex = 0.9)
-#abline(v = c_n0, lty = 3)
-
-
-#dev.off()
+# #pdf("figures/eco_evo_trP.pdf", width = 8, height = 3)
+# 
+# par(mfrow = c(2, 3))
+# layout(matrix(c(1, 2, 3), nrow = 1, ncol = 3, byrow = T), widths = rep(1, 3), heights = rep(1, 1))
+# #layout.show(12)
+# par(mar=c(0, 1.25, 0.5, 0), oma = c(5, 4.5, 2, 0.5))
+# 
+# 
+# ymax_P <- 500
+# yaxt2 <- seq(from = 0, to = ymax_P, by = 100)
+# 
+# plot(x = g0_set.1, y = P_evo.g0, type = "l", lty = 2, ylim = c(0, ymax_P), xlab = NA, ylab = NA, xaxt = "n", yaxt = "n", lwd = lwd.2, col = Ncol)
+# axis(side = 2, at = yaxt2, las = 1)
+# axis(side = 1, at = xaxt.g0)
+# axis(side = 2, at = yaxt2, las = 1)
+# mtext(side = 3, "Disturbance + reduced growth rate", cex = 0.9)
+# lines(x = g0_set.1, y = P_eco.g0, lty = 1, lwd = lwd.2, col = Ncol)
+# #mtext(side = 1, "Post-disturbance \n baseline host growth rate", line = 3.5, cex = 0.8)
+# mtext(side = 1, expression(Post-disturbance~baseline), line = 2.25, cex = 0.8)
+# mtext(side = 1, expression(host~growth~rate~(month^-1)), line = 3.75, cex = 0.8)
+# mtext(side = 2, "Partner equilibrium (no.)", cex = 0.9, line = 3)
+# legend("bottomright", legend = c("Partner maximizing", "Partner ESS"), lty = c(1, 2), lwd = lwd.2, bty = "n", col = Ncol, cex = 1.1)
+# #abline(v = g0, lty = 3)
+# 
+# plot(x = Fconst_set.1, y = P_evo.Fconst, type = "l", lty = 2, ylim = c(0, ymax_P), xlab = NA, ylab = NA, xaxt = "n", yaxt = "n", lwd = lwd.2, col = Ncol)
+# axis(side = 1, at = xaxt.Fconst)
+# axis(side = 2, at = yaxt2, labels = NA)
+# lines(x = Fconst_set.1, y = P_eco.Fconst, lty = 1, lwd = lwd.2, col = Ncol)
+# #mtext(side = 1, "Post-disturbance \n host fecundity", line = 3.5, cex = 0.8)
+# mtext(side = 1, expression(Post-disturbance~host), line = 2.25, cex = 0.8)
+# mtext(side = 1, expression(fecundity~(month^-1)), line = 3.75, cex = 0.8)
+# mtext(side = 3, "Disturbance + reduced fecundity", cex = 0.9)
+# #abline(v = Fconst, lty = 3)
+# 
+# 
+# plot(x = c_n0_set.1, y = P_evo.c_n0, type = "l", lty = 2, ylim = c(0, ymax_P), xlab = NA, ylab = NA, xaxt = "n", yaxt = "n", lwd = lwd.2, col = Ncol)
+# axis(side = 1, at = xaxt.c_n0)
+# axis(side = 2, at = yaxt2, labels = NA)
+# lines(x = c_n0_set.1, y = P_eco.c_n0, lty = 1, lwd = lwd.2, col = Ncol)
+# #mtext(side = 1, "Post-disturbance \n host DI mortality rate", line = 3.5, cex = 0.8)
+# mtext(side = 1, expression(Post-disturbance~host), line = 2.25, cex = 0.8)
+# mtext(side = 1, expression(DI~mortality~(month^-1)), line = 3.75, cex = 0.8)
+# mtext(side = 3, "Disturbance + increased mortality", cex = 0.9)
+# #abline(v = c_n0, lty = 3)
+# 
+# 
+# #dev.off()
 
 ```
 
 
 
+combined version with the partners and hosts in the same figure
+```{r}
+
+
+lwd.2 <- 2
+
+# xaxt.g0 <- seq(from = 0, to = 0.025, by = 0.005)
+# xaxt.Fconst <- seq(from = 0, to = 0.25, by = 0.03)
+# xaxt.c_n0 <- seq(from = 0.05, to = 0.1, by = 0.01)
+
+
+xaxt.g0 <- seq(from = 0, to = 0.9, by = 0.2)
+xaxt.Fconst <- seq(from = 0, to = 0.9, by = 0.2)
+xaxt.c_n0 <- seq(from = 0, to = 0.9, by = 0.2)
+
+
+# replace recovery times for cases where the population dies with NA
+eco_indx <- which(HA_eco.Fconst < sum(H0.0*p123*A_mids)) # less than initial conditions
+evo_indx <- which(HA_eco.Fconst < sum(H0.0*p123*A_mids))
+
+tr_evo.Fconst.Pp <- tr_evo.Fconst.P
+tr_eco.Fconst.Pp <- tr_eco.Fconst.P
+
+tr_evo.Fconst.Pp[evo_indx] <- NA
+tr_eco.Fconst.Pp[eco_indx] <- NA
+
+#pdf("figures/eco_evo_tr2.pdf", width = 7.5, height = 6)
+
+par(mfrow = c(3, 3))
+layout(matrix(c(1, 2, 3, 4, 5, 6, 7, 8, 9), nrow = 3, ncol = 3, byrow = T), widths = rep(1, 3), heights = rep(1, 3))
+#layout.show(12)
+par(mar=c(0, 1.25, 0.5, 0), oma = c(5, 4.5, 2, 0.5))
+
+ymax_tr <- tmax2
+#yaxt2 <- seq(from = 0, to = ymax_tr, by = 250)
+yaxt2 <- seq(from = 0, to = ymax_tr, by = 500)
+
+
+plot(x = rev(abs((g0_set.1-g0)/g0)), y = rev(tr_evo.g0.P), type = "l", lty = 2, ylim = c(0, ymax_tr), xlab = NA, ylab = NA, xaxt = "n", yaxt = "n", lwd = lwd.2, col = Ncol)
+lines(x = rev(abs((g0_set.1-g0)/g0)), y = rev(tr_eco.g0.P), lty = 1, lwd = lwd.2, col = Ncol)
+axis(side = 1, at = xaxt.g0, labels = NA)
+axis(side = 2, at = yaxt2, las = 1)
+mtext(side = 3, expression("Decreased host growth rate ("*g[0]*")"), cex = 0.9)
+mtext(side = 2, "Recovery time (months)", cex = 0.9, line = 3)
+legend("topleft", legend = c("Partner maximizing", "Partner ESS"), lty = c(1, 2), lwd = lwd.2, bty = "n", col = Ncol, cex = 1.1)
+#abline(v = g0, lty = 3)
+
+plot(x = rev(abs((Fconst_set.1 - Fconst)/Fconst)), y = rev(tr_evo.Fconst.Pp), type = "l", lty = 2, ylim = c(0, ymax_tr), xlab = NA, ylab = NA, xaxt = "n", yaxt = "n", lwd = lwd.2, col = Ncol)
+axis(side = 1, at = xaxt.Fconst, labels = NA)
+axis(side = 2, at = yaxt2, labels = NA)
+lines(x = rev(abs((Fconst_set.1 - Fconst)/Fconst)), y = rev(tr_eco.Fconst.Pp), lty = 1, lwd = lwd.2, col = Ncol)
+mtext(side = 3, expression("Decreased host fecundity ("*F[const]*")"), cex = 0.9)
+#abline(v = Fconst, lty = 3)
+
+plot(x = (c_n0_set.1-c_n0)/c_n0, y = tr_evo.c_n0.P, type = "l", lty = 2, ylim = c(0, ymax_tr), xlab = NA, ylab = NA, xaxt = "n", yaxt = "n", lwd = lwd.2, col = Ncol)
+axis(side = 1, at = xaxt.c_n0, labels = NA)
+axis(side = 2, at = yaxt2, labels = NA)
+lines(x = (c_n0_set.1-c_n0)/c_n0, y = tr_eco.c_n0.P, lty = 1, lwd = lwd.2, col = Ncol)
+mtext(side = 3, expression("Increased host mortality ("*c[n0]*")"), cex = 0.9)
+#abline(v = c_n0, lty = 3)
+
+ymax_HA <- 64000
+yaxt2 <- seq(from = 0, to = ymax_HA, by = 10000)
+
+plot(x = rev(abs((g0_set.1-g0)/g0)), y = rev(HA_evo.g0), type = "l", lty = 2, ylim = c(0, ymax_HA), xlab = NA, ylab = NA, xaxt = "n", yaxt = "n", lwd = lwd.2, col = Ncol)
+axis(side = 1, at = xaxt.g0, labels = NA)
+axis(side = 2, at = yaxt2, las = 1)
+lines(x = rev(abs((g0_set.1-g0)/g0)), y = rev(HA_eco.g0), lty = 1, lwd = lwd.2, col = Ncol)
+#mtext(side = 1, "Post-disturbance \n baseline host growth rate", line = 3.5, cex = 0.8)
+#mtext(side = 1, expression(Post-disturbance~baseline), line = 2.25, cex = 0.8)
+#mtext(side = 1, expression(host~growth~rate~(month^-1)), line = 3.75, cex = 0.8)
+mtext(side = 1, "Strength of press disturbance (percent increase or decrease in parameter)", outer = T, line = 2.5) #adj = -0.2
+mtext(side = 2, expression(Host~equilibrium~(cm^2)), cex = 0.9, line = 3.25)
+#abline(v = g0, lty = 3)
+
+plot(x = rev(abs((Fconst_set.1 - Fconst)/Fconst)), y = rev(HA_evo.Fconst), type = "l", lty = 2, ylim = c(0, ymax_HA), xlab = NA, ylab = NA, xaxt = "n", yaxt = "n", lwd = lwd.2, col = Ncol)
+axis(side = 1, at = xaxt.Fconst, labels = NA)
+axis(side = 2, at = yaxt2, labels = NA)
+lines(x = rev(abs((Fconst_set.1 - Fconst)/Fconst)), y = rev(HA_eco.Fconst), lty = 1, lwd = lwd.2, col = Ncol)
+#mtext(side = 1, "Post-disturbance \n host fecundity", line = 3.5, cex = 0.8)
+#mtext(side = 1, expression(Post-disturbance~host), line = 2.25, cex = 0.8)
+#mtext(side = 1, expression(fecundity~(month^-1)), line = 3.75, cex = 0.8)
+#abline(v = Fconst, lty = 3)
+
+plot(x = (c_n0_set.1-c_n0)/c_n0, y = HA_evo.c_n0, type = "l", lty = 2, ylim = c(0, ymax_HA), xlab = NA, ylab = NA, xaxt = "n", yaxt = "n", lwd = lwd.2, col = Ncol)
+axis(side = 1, at = xaxt.c_n0, labels = NA)
+axis(side = 2, at = yaxt2, labels = NA)
+lines(x = (c_n0_set.1-c_n0)/c_n0, y = HA_eco.c_n0, lty = 1, lwd = lwd.2, col = Ncol)
+#mtext(side = 1, "Post-disturbance \n host DI mortality rate", line = 3.5, cex = 0.8)
+#mtext(side = 1, expression(Post-disturbance~host), line = 2.25, cex = 0.8)
+#mtext(side = 1, expression(DI~mortality~(month^-1)), line = 3.75, cex = 0.8)
+#abline(v = c_n0, lty = 3)
+
+ymax_P <- 500
+yaxt2 <- seq(from = 0, to = ymax_P, by = 100)
+
+plot(x = rev(abs((g0_set.1-g0)/g0)), y = rev(P_evo.g0), type = "l", lty = 2, ylim = c(0, ymax_P), xlab = NA, ylab = NA, xaxt = "n", yaxt = "n", lwd = lwd.2, col = Ncol)
+axis(side = 2, at = yaxt2, las = 1)
+axis(side = 1, at = xaxt.g0, labels = xaxt.g0*100)
+axis(side = 2, at = yaxt2, las = 1)
+lines(x = rev(abs((g0_set.1-g0)/g0)), y = rev(P_eco.g0), lty = 1, lwd = lwd.2, col = Ncol)
+mtext(side = 2, "Partner equilibrium (no.)", cex = 0.9, line = 3)
+
+plot(x = rev(abs((Fconst_set.1 - Fconst)/Fconst)), y = rev(P_evo.Fconst), type = "l", lty = 2, ylim = c(0, ymax_P), xlab = NA, ylab = NA, xaxt = "n", yaxt = "n", lwd = lwd.2, col = Ncol)
+axis(side = 1, at = xaxt.Fconst, labels = xaxt.Fconst*100)
+axis(side = 2, at = yaxt2, labels = NA)
+lines(x = rev(abs((Fconst_set.1 - Fconst)/Fconst)), y = rev(P_eco.Fconst), lty = 1, lwd = lwd.2, col = Ncol)
+
+
+plot(x = (c_n0_set.1-c_n0)/c_n0, y = P_evo.c_n0, type = "l", lty = 2, ylim = c(0, ymax_P), xlab = NA, ylab = NA, xaxt = "n", yaxt = "n", lwd = lwd.2, col = Ncol)
+axis(side = 1, at = xaxt.c_n0, labels = xaxt.c_n0*100)
+axis(side = 2, at = yaxt2, labels = NA)
+lines(x = (c_n0_set.1-c_n0)/c_n0, y = P_eco.c_n0, lty = 1, lwd = lwd.2, col = Ncol)
+
+#dev.off()
+
+
+
+```
 
 
 ## H sensitivity
@@ -3777,7 +3915,7 @@ axis(side = 1, at = xax, labels = NA)
 axis(side = 2, at = yax, las = 1)
 #mtext(side = 3, line = -1.5, "a) a_n", adj = 0.05)
 mtext(side = 3, line = -1.5, expression(a*")"~a[n]), adj = 0.05)
-mtext(side = 2, line = 1.5, "% change in population size", outer = T)
+mtext(side = 2, line = 1.5, "% change in number of hosts", outer = T)
 mtext(side = 1, line = 2.1, "% change in parameter", outer = T)
 lines(x = p_x, y = (psim$Heq1[ ,4]-dH1eq[2])/dH1eq[2]*100, lty = 2, lwd = 2)
 lines(x = p_x, y = (psim$Heq1[ ,5]-dH1eq[3])/dH1eq[3]*100, lty = 1, lwd = 2)
@@ -3862,7 +4000,7 @@ plot(x = p_x, y = (psim$Heq1[ ,3]-dH1eq[1])/dH1eq[1]*100, type = "l", lty = 3, l
 axis(side = 1, at = xax, labels = NA)
 axis(side = 2, at = yax, las = 1)
 #mtext(side = 3, line = -1.5, "j) A_Fmn", adj = 0.05)
-mtext(side = 3, line = -1.5, expression(j*")"~A[Fmn]), adj = 0.05)
+mtext(side = 3, line = -1.5, expression(j*")"~A[rep]), adj = 0.05)
 lines(x = p_x, y = (psim$Heq1[ ,4]-dH1eq[2])/dH1eq[2]*100, lty = 2, lwd = 2)
 lines(x = p_x, y = (psim$Heq1[ ,5]-dH1eq[3])/dH1eq[3]*100, lty = 1, lwd = 2)
 
@@ -3895,7 +4033,7 @@ lines(x = p_x, y = (psim$Heq1[ ,4]-dH1eq[2])/dH1eq[2]*100, lty = 2, lwd = 2)
 lines(x = p_x, y = (psim$Heq1[ ,5]-dH1eq[3])/dH1eq[3]*100, lty = 1, lwd = 2)
 
 plot(x = 0, y = 0, type = "n", ylim = c(ymn, ymx), las = 1, xlab = NA, ylab = NA, xaxt = "n", yaxt = "n", frame.plot = F)
-legend("left", c("1", "2", "3"), lty = c(3, 2, 1, 1), col = c("black", "black", "black"), ncol = 2, lwd = 2, title = "Size class", bty = "n", cex = 1.2)
+legend("left", c("1", "2", "3"), lty = c(3, 2, 1, 1), col = c("black", "black", "black"), ncol = 1, lwd = 2, title = "Size class", bty = "n", cex = 1.2)
 
 # c(a_n, b_n, c_n0, a_m, b_m, c_m, Amax, Amin, g0, Fmn, Fexp, Fconst, Apatch)
 
@@ -4014,7 +4152,7 @@ plot(x = p_x, y = (psim$Heq1[ ,1]-dAeq)/dAeq*100, type = "l", lty = 1, lwd = 2, 
 lines(x = p_x, y = (psim$HFeq1-dFeq)/dFeq*100, lty = 1, lwd = 2, col = HFcol)
 axis(side = 1, at = xax, labels = NA)
 axis(side = 2, at = yax, las = 1)
-mtext(side = 3, line = -1.5, expression(j*")"~A[Fmn]), adj = 0.05)
+mtext(side = 3, line = -1.5, expression(j*")"~A[rep]), adj = 0.05)
 
 psim <- sensL7[[11]]
 plot(x = p_x, y = (psim$Heq1[ ,1]-dAeq)/dAeq*100, type = "l", lty = 1, lwd = 2, ylim = c(ymn, ymx), las = 1, xlab = NA, ylab = NA, xaxt = "n", yaxt = "n", col = HAcol)
